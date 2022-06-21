@@ -1,12 +1,39 @@
+import { $dataMetaSchema } from "ajv";
+import Caver from "caver-js";
+import { parse } from "path";
 
+const config = {
+  rpcURL: 'http://api.baobab.klaytn.net:8651'
+}
+const cav = new Caver(config.rpcURL);
 const App = {
+  auth: {  //전역변수
+    accessType:  'keystore',  //인증 방식 (privatekey or keystore)
+    keystore: '', // keystore 전체내용 저장
+    password: ''  // keystore 비밀번호
+  },
 
   start: async function () {
 
   },
 
-  handleImport: async function () {
-
+  handleImport: async function () {   // 불러온 파일이 유효한 keystore 파일 인지 검증
+    const fileReader = new FileReader();
+    fileReader.readAsText(event.target.files[0]);
+    fileReader.onload = (event) => {
+      try {
+        if(!this.checkValidKeystore(event.target.result)) {
+          $('#message').text('유효하지 않은 keysotre 파일 입니다.');
+          return;
+        }
+        this.auth.keystore = event.target.result;
+        $('#message').text('keystore 통과, 비밀번호를 입력하세요.');
+        document.querySelector('#input-password').focus();
+      } catch(event) { // 검증을 통과를 하게되면 keystore 파일의 내용을 전역변수에 저장
+        $('#message').text('유효하지 않은 keysotre 파일 입니다.');
+        return;
+      }
+    }
   },
 
   handlePassword: async function () {
@@ -45,7 +72,14 @@ const App = {
 
   },
 
-  checkValidKeystore: function (keystore) {
+  checkValidKeystore: function (keystore) { // 유효한 keystore인지 확인
+    const parsedKeystore = JSON.parse(keystore); // json에 parse 함수를 써서 keystore 파일 안에 있는 내용을 분해하고 오브젝트로 변환해서 상수에 전환
+    const isValidKeystore = parsedKeystore.version &&
+      parsedKeystore.id &&
+      parsedKeystore.address &&
+      parsedKeystore.crypto;
+
+    return isValidKeystore;
 
   },
 

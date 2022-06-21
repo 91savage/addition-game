@@ -12,7 +12,7 @@ module.exports = function (deployer) {
       }
       )
 
-    fs.writeFile('deployAddress', AdditionGame.address,
+    fs.writeFile('deployedAddress', AdditionGame.address,
     (err) => {
       if(err) throw err;
       console.log("파일에 주소 입력 성공");
