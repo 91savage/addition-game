@@ -1,6 +1,6 @@
-const webpack = require('webpack')
-const path = require('path')
-const fs = require('fs')
+const webpack = require('webpack');
+const path = require('path');
+const fs = require('fs');
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
@@ -9,6 +9,9 @@ module.exports = {
   output: {
     filename: "index.js",
     path: path.resolve(__dirname, 'dist')   
+  },
+  node: {
+    fs: "empty",
   },
   plugins: [   
     // new webpack.DefinePlugin({

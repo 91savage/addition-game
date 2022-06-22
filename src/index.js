@@ -3,7 +3,7 @@ import Caver from "caver-js";
 import { parse } from "path";
 
 const config = {
-  rpcURL: 'http://api.baobab.klaytn.net:8651'
+  rpcURL: 'https://api.baobab.klaytn.net:8651'
 }
 const cav = new Caver(config.rpcURL);
 const App = {
@@ -19,29 +19,31 @@ const App = {
 
   handleImport: async function () {   // 불러온 파일이 유효한 keystore 파일 인지 검증
     const fileReader = new FileReader();
-    fileReader.readAsText(event.target.files[0]);
+    fileReader.readAsText(event.target.files[0]); // 우리가 선택한 파일을 뜻함
     fileReader.onload = (event) => {
       try {
         if(!this.checkValidKeystore(event.target.result)) {
           $('#message').text('유효하지 않은 keysotre 파일 입니다.');
           return;
         }
-        this.auth.keystore = event.target.result;
+        this.auth.keystore = event.target.result; //auth.keystore 라는 전역변수에 값 저장
         $('#message').text('keystore 통과, 비밀번호를 입력하세요.');
         document.querySelector('#input-password').focus();
-      } catch(event) { // 검증을 통과를 하게되면 keystore 파일의 내용을 전역변수에 저장
+      } catch (event) { // 검증을 통과를 하게되면 keystore 파일의 내용을 전역변수에 저장
         $('#message').text('유효하지 않은 keysotre 파일 입니다.');
         return;
       }
     }
   },
 
-  handlePassword: async function () {
-
+  handlePassword: async function () { // 비밀번호 체크 후 전역변수 auth.password 에 저장
+    this.auth.password = event.target.value;
   },
 
   handleLogin: async function () {
-
+    if (this.auth.accesType === 'keystore') {
+      
+    }
   },
 
   handleLogout: async function () {
