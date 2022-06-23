@@ -6,6 +6,7 @@ const config = {
   rpcURL: 'https://api.baobab.klaytn.net:8651'
 }
 const cav = new Caver(config.rpcURL);
+const agContract = new cav.klay.Contract(DEPLOYED_ABI, DEPLOYED_ADDRESS);
 const App = {
   auth: {  //전역변수
     accessType:  'keystore',  //인증 방식 (privatekey or keystore)
@@ -14,7 +15,15 @@ const App = {
   },
 
   start: async function () {
-
+    const walletFromSession = sessionStorage.getItem('walletInstance'); //getitem을 써서 키값을 넘기면 쌍으로 저장돼었던 value 값을 불러온 후 상수에 저장
+    if (walletFromSession) {
+      try {
+        cav.klay.accounts.wallet.add(JSON.parse(walletFromSession));
+        this.changeUI(JSON.parse(walletFromSession));
+      } catch (e) {
+        sessionStorage.removeItem('walletInstance');
+      }
+    }
   },
 
   handleImport: async function () {   // 불러온 파일이 유효한 keystore 파일 인지 검증
@@ -41,12 +50,12 @@ const App = {
   },
 
   handleLogin: async function () { // keystore과 비밀번호를 통해서 얻을 수 있는 것 : private key
-    if (this.auth.accesType === 'keystore') { //나중에 프라이빗 키를 넣어야 할 때는 변경하여 사용
+    if (this.auth.accessType === 'keystore') { //나중에 프라이빗 키를 넣어야 할 때는 변경하여 사용
       try {
-        const privatekey = cav.klay.accounts.decrypt(this.auth.keystore, this.auth.password).privatekey; 
+        const privateKey = cav.klay.accounts.decrypt(this.auth.keystore, this.auth.password).privateKey; 
         // cav 인스턴스의 accounts member를통해서 decrypts(해독) 함수를 쓸 수 있음 (keystore파일 내용과 비밀번호를 인자로 넘겨서 derypt된 계정 오브젝트를 반환받음
         // 그 오브젝트 중에서 privatekey를 가져와서 상수에다가 저장시킴
-        this.integrateWallet(privatekey);
+        this.integrateWallet(privateKey);
       } catch (e) {
         $('#message').text('비밀번호가 일치하지 않습니다.');
       }
@@ -54,7 +63,8 @@ const App = {
   },
 
   handleLogout: async function () {
-
+    this.removeWallet(); 
+    location.reload(); //페이지 새로고침
   },
 
   generateNumbers: async function () {
@@ -66,19 +76,44 @@ const App = {
   },
 
   deposit: async function () {
-
+    const walletInstance = this.getWallet();
+    if (walletInstance) { // walletInstance가 존재 한다면
+      if (await this.callOwner() !== walletInstance.address) return; //로그인된 계쩡주소와 컨트랙에서 리턴받은 owner의 주소를 비교해봄
+      else{
+        var amount = $("#amount").val();
+        if (amount) {
+          agContract.methods.deposit().send({
+            from :  walletInstance.address, // bapp 내에서 인증이 완료된 계정만 쓸 수 있음
+            gas : '250000',
+            value : cav.utils.toPeb(amount, "KLAY")
+          })
+          .once('transactionHash', (txHash) => {
+            console.log(`txHash: ${txHash}`);
+          })
+          .once('receipt', (receipt) => {
+            console.log(`(#${receipt.blockNumber})`,receipt);
+          }) 
+          .once('error', (error) => {
+            alert(error.message);
+          });
+        }
+        return;
+      }
+    } 
   },
 
   callOwner: async function () {
-
+    return await agContract.methods.owner().call();  //만든 agcontract인스턴스를 통해 owner함수에 접근하고 값을 불러옴  await = 비동기 / 
   },
 
-  callContractBalance: async function () {
+  callContractBalance: async function () { 
 
   },
 
   getWallet: function () {
-
+    if(cav.klay.accounts.wallet.length) { //계정이 추가가 되어 있다면
+      return cav.klay.accounts.wallet[0]; // 월렛에 추가된 계정 중 제일 첫 번쨰 계정 즉, 지금 내가 로그인 되어있는 계정
+    }
   },
 
   checkValidKeystore: function (keystore) { // 유효한 keystore인지 확인
@@ -100,18 +135,23 @@ const App = {
   },
 
   reset: function () {
-
+    this.auth = {
+      keystore : '',
+      password : ''
+    };
   },
 
   changeUI: async function (walletInstance) {
     $('#loginModal').modal('hide');
     $('#login').hide();
-    $('#login').show();
+    $('#logout').show();
     $('#address').append('<br>' + '<p>' + '내 계정 주소: ' + walletInstance.address + '</p>');
   },
 
   removeWallet: function () {
-
+    cav.klay.accounts.wallet.clear(); // wallet에 추가됐던 정보 clear
+    sessionStorage.removeItem('walletInstance'); // session 삭제 walletInstance : 키 값.
+    this.reset(); //
   },
 
   showTimer: function () {
