@@ -1,0 +1,33 @@
+{
+    "security.workspace.trust.untrustedFiles": "open",
+    "git.ignoreMissingGitWarning": true,
+    "workbench.iconTheme": "material-icon-theme",
+
+    "javascript.format.enable": false,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.colorDecorators": true,
+    "prettier.arrowParens": "avoid",
+    "prettier.tabWidth": 4,
+    "prettier.semi": true,
+    "prettier.singleQuote": true,
+    "prettier.printWidth": 100,
+    "prettier.trailingComma": "es5",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+    "window.zoomLevel": 0,
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "auto-rename-tag.activationOnLanguage": ["*"],
+    "vscode-color-picker.languages": [
+        "php",
+        "html",
+        "css",
+        "python",
+        "jsonc",
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "vue"
+    ]
+}
