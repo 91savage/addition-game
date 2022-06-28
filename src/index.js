@@ -1,5 +1,6 @@
 import { $dataMetaSchema } from 'ajv';
 import Caver from 'caver-js';
+import { Spinner } from 'spin.js';
 import { parse } from 'path';
 
 const config = {
@@ -77,17 +78,31 @@ const App = {
         location.reload(); //페이지 새로고침
     },
 
-    generateNumbers: async function () {},
+    generateNumbers: async function () {
+        var num1 = Math.floor(Math.random() * 50) + 10;
+        var num2 = Math.floor(Math.random() * 50) + 10;
+        sessionStorage.setItem('result', num1 + num2);
+
+        $('#start').hide();
+        $('#num1').text(num1);
+        $('#num2').text(num2);
+        $('#question').show();
+        document.querySelector('#answer').focus();
+
+        this.showTimer();
+    },
 
     submitAnswer: async function () {},
 
     deposit: async function () {
+        var spinner = this.showSpinner();
         //송금은 owner 계정만 가능, 이벤트 주최자
         const walletInstance = this.getWallet(); // 지갑정보
         if (walletInstance) {
             // walletInstance가 존재 한다면
-            if ((await this.callOwner) !== walletInstance.address) return;
+            if ((await this.callOwner()).toLowerCase() !== walletInstance.address) return;
             //로그인된 계쩡주소와 컨트랙에서 리턴받은 owner의 주소를 비교해봄
+            //if ((await this.callOwner()).toLowerCase() === walletInstance.address)
             else {
                 var amount = $('#amount').val();
                 if (amount) {
@@ -98,15 +113,16 @@ const App = {
                             gas: '250000',
                             value: cav.utils.toPeb(amount, 'KLAY'), //cav 라이브러리의 utils 사용
                         })
-                        .once('transactionHash', txHash => {
-                            console.log(`txHash: ${txHash}`); //숫자 1 옆에 Quotation Mark, 쿼테이션 마크
+                        .then('transactionHash', txHash => {
+                            console.log(`txHash: ${txHash}`); // 숫자 1 옆에 Quotation Mark, 쿼테이션 마크
                         })
-                        .once('receipt', receipt => {
+                        .then('receipt', receipt => {
                             console.log(`(#${receipt.blockNumber})`, receipt);
+                            spinner.stop();
                             alert(amount + 'KLAY를 컨트랙에 송금 했씁니다.');
                             location.reload();
                         })
-                        .once('error', error => {
+                        .then('error', error => {
                             alert(error.message);
                         });
                 }
@@ -120,6 +136,7 @@ const App = {
     },
 
     callContractBalance: async function () {
+        // 컨트랙 인스턴스를 통해 getbalance로 값을 불러옴
         return await agContract.methods.getBalance().call();
     },
 
@@ -161,6 +178,7 @@ const App = {
         $('#loginModal').modal('hide');
         $('#login').hide();
         $('#logout').show();
+        $('#game').show();
         $('#address').append('<br>' + '<p>' + '내 계정 주소: ' + walletInstance.address + '</p>');
         $('#contractBalance').append(
             '<p>' +
@@ -182,9 +200,26 @@ const App = {
         this.reset(); //
     },
 
-    showTimer: function () {},
+    showTimer: function () {
+        var seconds = 3; //3초 저장하는 함수
+        $('#timer').text(seconds);
 
-    showSpinner: function () {},
+        var interval = setInterval(() => {
+            $('#timer').text(--seconds);
+            if (seconds <= 0) {
+                $('#timer').text('');
+                $('#answer').val('');
+                $('#question').hide();
+                $('#start').show();
+                clearInterval(interval);
+            }
+        }, 1000);
+    },
+
+    showSpinner: function () {
+        var target = document.getElementById('spin');
+        return new Spinner(opts).spin(target);
+    },
 
     receiveKlay: function () {},
 };
