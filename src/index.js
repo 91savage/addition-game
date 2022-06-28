@@ -169,8 +169,9 @@ const App = {
                 'KLAY' +
                 '</p>'
         );
-
-        if (await this.callOwner() === walletInstance.address) {
+        console.log(await this.callOwner());
+        console.log(walletInstance.address.toUpperCase());
+        if ((await this.callOwner()) == walletInstance.address.toUpperCase()) {
             $('#owner').show();
         }
     },
