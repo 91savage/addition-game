@@ -2,7 +2,7 @@
     "security.workspace.trust.untrustedFiles": "open",
     "git.ignoreMissingGitWarning": true,
     "workbench.iconTheme": "material-icon-theme",
-
+    "code-runner.runInTerminal": true,
     "javascript.format.enable": false,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
